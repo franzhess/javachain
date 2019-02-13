@@ -6,11 +6,11 @@ public class BlockChain {
     private static final int BLOCK_SIZE = 10;
     public static final String FIRST_HASH = "0";
     private ArrayList<Block> chain = new ArrayList<>();
-    private HashMap<String, TransactionOutput> unusedOutputs = new HashMap<>();
+    private HashMap<String, TransactionResult> unusedOutputs = new HashMap<>();
 
     private int difficulty;
     private Block currentBlock;
-    TransactionOutput genesisOutput;
+    private TransactionResult genesisOutput;
 
     public BlockChain(int difficulty) {
         this.difficulty = difficulty;
@@ -28,8 +28,8 @@ public class BlockChain {
         return new Block(previousHash);
     }
 
-    ArrayList<TransactionOutput> getUnusedTransactions(PublicKey publicKey) {
-        ArrayList<TransactionOutput> outputs = new ArrayList<>();
+    ArrayList<TransactionResult> getUnusedTransactions(PublicKey publicKey) {
+        ArrayList<TransactionResult> outputs = new ArrayList<>();
         unusedOutputs.forEach((id, output) -> {
             if (output.isMine(publicKey))
                 outputs.add(output);
@@ -51,12 +51,12 @@ public class BlockChain {
         }
     }
 
-    void mineBlock(Block block) {
+    private void mineBlock(Block block) {
         block.mineBlock(difficulty);
         chain.add(block);
     }
 
-    void close() {
+    public void close() {
         if (currentBlock.transactions.size() > 0)
             mineBlock(currentBlock);
     }
@@ -69,14 +69,14 @@ public class BlockChain {
 
         System.out.println(transaction.toString());
 
-        ArrayList<TransactionOutput> transactionInputs = new ArrayList<>();
+        ArrayList<TransactionResult> transactionInputs = new ArrayList<>();
         transaction.getInputs().forEach(input -> {
             if (unusedOutputs.containsKey(input.id))
                 transactionInputs.add(unusedOutputs.get(input.id));
         });
 
         float totalInput = 0;
-        for (TransactionOutput input : transactionInputs)
+        for (TransactionResult input : transactionInputs)
             totalInput += input.amount;
 
         if (totalInput < transaction.getAmount()) {
@@ -84,14 +84,14 @@ public class BlockChain {
             return false;
         }
 
-        ArrayList<TransactionOutput> outputs = new ArrayList<>();
+        ArrayList<TransactionResult> outputs = new ArrayList<>();
         float unspent = totalInput - transaction.getAmount();
-        outputs.add(new TransactionOutput(transaction.getReceiver(), transaction.getAmount(), transaction.getId()));
+        outputs.add(new TransactionResult(transaction.getReceiver(), transaction.getAmount(), transaction.getId()));
         if (unspent > 0)
-            outputs.add(new TransactionOutput(transaction.getSender(), unspent, transaction.getId()));
+            outputs.add(new TransactionResult(transaction.getSender(), unspent, transaction.getId()));
 
         transactionInputs.forEach(input -> unusedOutputs.remove(input.id));
-        outputs.forEach(output->{
+        outputs.forEach(output -> {
             unusedOutputs.put(output.id, output);
             transaction.addOutput(output);
         });
@@ -100,8 +100,8 @@ public class BlockChain {
     }
 
     void generateInitialCoins(PublicKey owner, float amount) {
-        if(genesisOutput == null) {
-            genesisOutput = new TransactionOutput(owner, amount, null);
+        if (genesisOutput == null) {
+            genesisOutput = new TransactionResult(owner, amount, null);
             unusedOutputs.put(genesisOutput.id, genesisOutput);
         } else
             System.out.println("Initial coins have already been issued!");
@@ -110,7 +110,7 @@ public class BlockChain {
     public boolean verify() {
         String previousHash = FIRST_HASH;
         String target = new String(new char[difficulty]).replace('\0', '0');
-        HashMap<String, TransactionOutput> tempOutputs = new HashMap<>();
+        HashMap<String, TransactionResult> tempOutputs = new HashMap<>();
         tempOutputs.put(genesisOutput.id, genesisOutput);
 
         for (Block block : chain) {
@@ -124,7 +124,7 @@ public class BlockChain {
                 return false;
             }
 
-            if(!block.hash.substring(0, difficulty).equals(target)) {
+            if (!block.hash.substring(0, difficulty).equals(target)) {
                 System.out.println("Hash was not correctly mined!");
                 return false;
             }
@@ -136,19 +136,19 @@ public class BlockChain {
                 return false;
             }
 
-            for(Transaction transaction : block.transactions) {
-                if(!transaction.verify()) {
+            for (Transaction transaction : block.transactions) {
+                if (!transaction.verify()) {
                     System.out.println("Transaction could not be verified!");
                     return false;
                 }
 
-                if(transaction.getInputSum() != transaction.getOutputSum()) {
+                if (transaction.getInputSum() != transaction.getOutputSum()) {
                     System.out.println("Transaction inputs and outputs don't match! " + transaction.getId());
                     return false;
                 }
 
-                for(TransactionOutput input : transaction.getInputs()) {
-                    if(tempOutputs.containsKey(input.id))
+                for (TransactionResult input : transaction.getInputs()) {
+                    if (tempOutputs.containsKey(input.id))
                         tempOutputs.remove(input.id);
                     else {
                         System.out.println("Transaction uses invalid inputs!");
@@ -156,15 +156,14 @@ public class BlockChain {
                     }
                 }
 
-                transaction.getOutputs().forEach(output->tempOutputs.put(output.id, output));
+                transaction.getOutputs().forEach(output -> tempOutputs.put(output.id, output));
             }
         }
 
         return true;
     }
 
-    @Override
-    public String toString() {
-        return String.format("blocks: %d - verified: %b", chain.size(), verify());
+    public int size() {
+        return chain.size();
     }
 }

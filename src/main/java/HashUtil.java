@@ -1,4 +1,4 @@
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -7,14 +7,15 @@ public class HashUtil {
     public static String calculateSHA256(String base) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(base.getBytes("UTF-8"));
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if(hex.length() == 1) hexString.append('0');
+            byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte hash_byte : hash) {
+                String hex = Integer.toHexString(0xff & hash_byte);
+                if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
-            return hexString.toString();        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return null;
@@ -50,11 +51,12 @@ public class HashUtil {
         }
     }
 
+    //not the actual merkle root, but good enough
     public static String calculateMerkleRoot(ArrayList<Transaction> transactions) {
-        String concat = "";
-        for(Transaction transaction : transactions) {
-            concat += transaction.getId();
+        StringBuilder concat = new StringBuilder();
+        for (Transaction transaction : transactions) {
+            concat.append(transaction.getId());
         }
-        return calculateSHA256(concat);
+        return calculateSHA256(concat.toString());
     }
 }

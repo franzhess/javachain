@@ -1,13 +1,13 @@
 import java.security.PublicKey;
 
-public class TransactionOutput {
+public class TransactionResult {
     public String id;
     public PublicKey recipient;
     public float amount;
     public String parentTransactionId;
 
-    public TransactionOutput(PublicKey reciepient, float amount, String parentTransactionId) {
-        this.recipient = reciepient;
+    public TransactionResult(PublicKey recipient, float amount, String parentTransactionId) {
+        this.recipient = recipient;
         this.amount = amount;
         this.parentTransactionId = parentTransactionId;
         this.id = HashUtil.calculateSHA256(HashUtil.getStringFromKey(this.recipient)+

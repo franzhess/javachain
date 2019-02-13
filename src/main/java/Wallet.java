@@ -36,9 +36,9 @@ public class Wallet {
         return getBalance(blockChain.getUnusedTransactions(publicKey));
     }
 
-    float getBalance(ArrayList<TransactionOutput> outputs) {
+    private float getBalance(ArrayList<TransactionResult> outputs) {
         float sum = 0;
-        for (TransactionOutput output : outputs)
+        for (TransactionResult output : outputs)
             if (output.isMine(publicKey))
                 sum += output.amount;
 
@@ -52,7 +52,7 @@ public class Wallet {
     }
 
     private Transaction generateTransaction(PublicKey receiver, float amount) {
-        ArrayList<TransactionOutput> unusedOutputs = blockChain.getUnusedTransactions(publicKey);
+        ArrayList<TransactionResult> unusedOutputs = blockChain.getUnusedTransactions(publicKey);
 
         if (getBalance() < amount) {
             System.out.println("Not enough funds");
@@ -60,8 +60,8 @@ public class Wallet {
         }
 
         float total = 0;
-        ArrayList<TransactionOutput> transactionInputs = new ArrayList<>();
-        for (TransactionOutput output : unusedOutputs) {
+        ArrayList<TransactionResult> transactionInputs = new ArrayList<>();
+        for (TransactionResult output : unusedOutputs) {
             if (output.isMine(publicKey)) {
                 transactionInputs.add(output);
                 total += output.amount;

@@ -20,7 +20,7 @@ public class Block {
         String target = new String(new char[difficulty]).replace('\0', '0');
 
         hash = generateHash();
-        while (!hash.substring(0,difficulty).equals(target)) {
+        while (!hash.substring(0, difficulty).equals(target)) {
             nonce++;
             hash = generateHash();
         }
@@ -29,6 +29,6 @@ public class Block {
     }
 
     public String generateHash() {
-        return HashUtil.calculateSHA256(previousHash + merkleRoot + String.valueOf(timestamp) + String.valueOf(nonce));
+        return HashUtil.calculateSHA256(previousHash + merkleRoot + timestamp + nonce);
     }
 }

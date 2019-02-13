@@ -12,12 +12,12 @@ public class Transaction {
     private final byte[] signature;
     private final int sequence;
 
-    private final List<TransactionOutput> inputs;
-    private final List<TransactionOutput> outputs = new ArrayList<>();
+    private final List<TransactionResult> inputs;
+    private final List<TransactionResult> outputs = new ArrayList<>();
 
     private static int sequenceCounter = 0;
 
-    public Transaction(PublicKey sender, PrivateKey privateKey, PublicKey receiver, float amount, ArrayList<TransactionOutput> inputs) {
+    public Transaction(PublicKey sender, PrivateKey privateKey, PublicKey receiver, float amount, ArrayList<TransactionResult> inputs) {
         this.sender = sender;
         this.receiver = receiver;
         this.amount = amount;
@@ -37,9 +37,9 @@ public class Transaction {
         return true;
     }
 
-    private float sum(List<TransactionOutput> transactionOutputs) {
+    private float sum(List<TransactionResult> transactionResults) {
         float sum = 0;
-        for (TransactionOutput output : transactionOutputs)
+        for (TransactionResult output : transactionResults)
             sum += output.amount;
         return sum;
     }
@@ -60,7 +60,7 @@ public class Transaction {
         return transactionId;
     }
 
-    public Iterable<TransactionOutput> getInputs() {
+    public Iterable<TransactionResult> getInputs() {
         return inputs;
     }
 
@@ -76,11 +76,11 @@ public class Transaction {
         return sender;
     }
 
-    public void addOutput(TransactionOutput transactionOutput) {
-        outputs.add(transactionOutput);
+    public void addOutput(TransactionResult transactionResult) {
+        outputs.add(transactionResult);
     }
 
-    public Iterable<TransactionOutput> getOutputs() {
+    public Iterable<TransactionResult> getOutputs() {
         return Collections.unmodifiableList(outputs);
     }
 

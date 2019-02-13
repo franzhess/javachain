@@ -10,15 +10,15 @@ public class Main {
 
         BlockChain blockChain = new BlockChain(4);
 
-        Wallet coinbase = new Wallet(blockChain, "coinbase");
+        Wallet icu = new Wallet(blockChain, "icu");
 
         ArrayList<Wallet> wallets = new ArrayList<>();
         for (int i = 0; i < 20; i++)
             wallets.add(new Wallet(blockChain, "wallet" + i));
 
         float initialOffering = 100000000;
-        blockChain.generateInitialCoins(coinbase.publicKey, initialOffering);
-        wallets.forEach(wallet -> coinbase.sendFunds(wallet.publicKey, initialOffering / wallets.size()));
+        blockChain.generateInitialCoins(icu.publicKey, initialOffering);
+        wallets.forEach(wallet -> icu.sendFunds(wallet.publicKey, initialOffering / wallets.size()));
 
         Random random = new Random(System.currentTimeMillis());
         for (int i = 0; i < 1000; i++) {
@@ -35,6 +35,6 @@ public class Main {
 
         wallets.forEach(wallet -> System.out.println(wallet.toString()));
 
-        System.out.println(blockChain.toString());
+        System.out.println(String.format("blocks: %d - verified: %b", blockChain.size(), blockChain.verify()));
     }
 }
